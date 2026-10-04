@@ -1,0 +1,17 @@
+services:
+  downloader:
+    volumes:
+      - fetchly-engines:/app/engines
+      - /home/nard/.config/fetchly/tiktok-cookies.txt:/run/tiktok-cookies.txt:ro
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file: .env
+    restart: unless-stopped
+    init: true
+    # Optional. Private, single-user use only; never enable on a public shared service.
+    # volumes:
+    #   - /home/you/.config/fetchly/tiktok-cookies.txt:/run/tiktok-cookies.txt:ro
+
+volumes:
+  fetchly-engines:

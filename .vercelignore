@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+*cookie*.txt
+*.zip
+__pycache__
+.venv
+engines
+backend/live-test-results.json
+backend/instagram-download-test.json

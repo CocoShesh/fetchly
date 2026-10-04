@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: fetchly-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend.Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: MEDIA_BACKEND_KEY
+        generateValue: true
+      - key: MEDIA_BIND
+        value: 0.0.0.0
+      - key: FETCHLY_PRIVATE_MODE
+        value: "0"
+      - key: MAX_DOWNLOAD_BYTES
+        value: "524288000"
+      - key: FETCHLY_ENGINE_DIR
+        value: /app/engines

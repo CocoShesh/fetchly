@@ -1,0 +1,30 @@
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.pyc
+cookies*.txt
+
+# Deployment secrets and generated files
+.env*
+!.env.example
+*cookie*.txt
+*.tsbuildinfo
+*.zip
+engines/
+backend/live-test-results.json
+backend/instagram-download-test.json
