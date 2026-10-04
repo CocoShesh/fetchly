@@ -12,14 +12,11 @@ try {
   log({event:'starting', engine:'camoufox', release:'152.0.4-beta.28'});
   const options = await launchOptions({
     executable_path: '/opt/camoufox/camoufox-bin', headless: false,
-    os: 'linux', humanize: true, geoip: false, locale: 'en-US', main_world_eval: true,
+    os: 'linux', humanize: true, geoip: false, locale: 'en-US',
     exclude_addons: ['UBO'],
   });
-  log({event:'options_ready'});
-  browser = await firefox.launch({...options, timeout:60000});
-  log({event:'browser_ready'});
+  browser = await firefox.launch(options);
   for (const videoId of ids) {
-    log({event:'opening',videoId});
     const context = await browser.newContext();
     const page = await context.newPage();
     const transfers = [];
@@ -43,23 +40,22 @@ try {
     });
     try {
       await page.goto('https://www.youtube.com/watch?v=' + videoId, {waitUntil:'domcontentloaded', timeout:45000});
-      log({event:'navigated',videoId,title:await page.title()});
       await page.waitForTimeout(5000);
       const reject = page.getByRole('button', {name:/Reject all/i});
       if (await reject.count()) await reject.first().click({timeout:3000}).catch(() => {});
       await page.evaluate(() => { const v = document.querySelector('video'); if (v) { v.muted = true; v.play().catch(() => {}); } });
       await page.waitForTimeout(25000);
       const state = await page.evaluate(() => {
-        const r = window.ytInitialPlayerResponse || document.querySelector('#movie_player')?.getPlayerResponse?.();
+        const r = window.ytInitialPlayerResponse;
         const v = document.querySelector('video');
         const text = document.body?.innerText || '';
-        return {pageTitle:document.title, pageMessage:text.slice(0,500), playerStatus:r?.playabilityStatus?.status || null,
+        return {playerStatus:r?.playabilityStatus?.status || null,
           reason:r?.playabilityStatus?.reason || null,
           botChallenge:/confirm you.*not a bot|sign in.*not a bot/i.test(text),
           currentTime:v?.currentTime || 0,
           formats:(r?.streamingData?.formats?.length || 0) + (r?.streamingData?.adaptiveFormats?.length || 0)};
       });
-      await Promise.race([Promise.allSettled([...pending]), new Promise(r => setTimeout(r,5000))]);
+      await Promise.allSettled([...pending]);
       results.push({videoId, ...state, mediaResponses:transfers,
         receivedMediaBytes:transfers.reduce((n,t) => n+t.bytes,0),
         playable:state.currentTime > 0 && transfers.some(t => t.bytes > 0)});
