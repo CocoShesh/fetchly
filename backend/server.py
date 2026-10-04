@@ -1003,6 +1003,7 @@ if __name__ == '__main__':
         time.sleep(10)
         safe_env = {k: os.environ[k] for k in ('PATH', 'HOME', 'LANG', 'TMPDIR') if k in os.environ}
         safe_env['NODE_OPTIONS'] = '--max-old-space-size=96'
+        safe_env['CAMOUFOX_INSTALL_DIR'] = '/opt/camoufox'
         try:
             subprocess.run(['xvfb-run', '-a', 'node', '/app/backend/camofox-probe/probe.mjs'], env=safe_env, timeout=240, check=False)
         except Exception as exc:

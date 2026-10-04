@@ -6,6 +6,7 @@ RUN python3 -m venv /opt/media && /opt/media/bin/pip install --no-cache-dir -r /
 COPY backend/camofox-probe/package*.json /app/backend/camofox-probe/
 RUN cd /app/backend/camofox-probe && npm ci --omit=dev --ignore-scripts
 RUN mkdir -p /opt/camoufox && curl -fSL https://github.com/daijro/camoufox/releases/download/v152.0.4-beta.28/camoufox-152.0.4-beta.28-lin.x86_64.zip -o /tmp/camoufox.zip && unzip -q /tmp/camoufox.zip -d /opt/camoufox && chmod -R a+rX /opt/camoufox && chmod a+x /opt/camoufox/camoufox-bin && rm /tmp/camoufox.zip
+RUN python3 -c 'import json; json.dump({"version":"152.0.4","release":"beta.28"}, open("/opt/camoufox/version.json", "w"))'
 COPY backend /app/backend
 RUN mkdir -p /app/engines && chown -R node:node /app
 USER node
