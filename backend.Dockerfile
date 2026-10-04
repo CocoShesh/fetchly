@@ -1,11 +1,8 @@
-FROM node:24-trixie-slim
+FROM node:24-bookworm-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv ffmpeg ca-certificates tini curl unzip xvfb xauth libgtk-3-0 libdbus-glib-1-2 libxt6 libasound2 libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libegl1 libgl1-mesa-dri libgbm1 fonts-liberation fonts-noto-color-emoji fontconfig && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv ffmpeg ca-certificates tini && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN python3 -m venv /opt/media && /opt/media/bin/pip install --no-cache-dir -r /app/backend/requirements.txt
-COPY backend/camofox-probe/package*.json /app/backend/camofox-probe/
-RUN cd /app/backend/camofox-probe && npm ci --omit=dev --ignore-scripts
-RUN mkdir -p /opt/camoufox && curl -fSL https://github.com/daijro/camoufox/releases/download/v152.0.4-beta.28/camoufox-152.0.4-beta.28-lin.x86_64.zip -o /tmp/camoufox.zip && unzip -q /tmp/camoufox.zip -d /opt/camoufox && chmod -R a+rX /opt/camoufox && chmod a+x /opt/camoufox/camoufox-bin && rm /tmp/camoufox.zip
 COPY backend /app/backend
 RUN mkdir -p /app/engines && chown -R node:node /app
 USER node
