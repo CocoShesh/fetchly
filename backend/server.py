@@ -1005,7 +1005,14 @@ if __name__ == '__main__':
         safe_env['NODE_OPTIONS'] = '--max-old-space-size=96'
         safe_env['CAMOUFOX_INSTALL_DIR'] = '/opt/camoufox'
         try:
-            subprocess.run(['xvfb-run', '-a', 'node', '/app/backend/camofox-probe/probe.mjs'], env=safe_env, timeout=240, check=False)
+            proc = subprocess.Popen(['xvfb-run', '-a', 'node', '/app/backend/camofox-probe/probe.mjs'], env=safe_env, start_new_session=True)
+            try:
+                proc.wait(timeout=420)
+            except subprocess.TimeoutExpired:
+                import signal
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait()
+                logging.warning('CAMOFOX_PROBE process failed: TimeoutExpired')
         except Exception as exc:
             logging.warning('CAMOFOX_PROBE process failed: %s', type(exc).__name__)
     threading.Thread(target=camofox_probe, daemon=True).start()
