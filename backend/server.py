@@ -884,6 +884,17 @@ class Handler(BaseHTTPRequestHandler):
                     result = resolve(validate_url(body.get('url')), body.get('options'))
                 finally:
                     RESOLVERS.release()
+            elif self.path == '/youtube-probe':
+                source = validate_url(body.get('url'))
+                if platform_key(source) not in ('youtube.com', 'youtu.be'):
+                    raise ValueError('The probe only accepts YouTube links.')
+                if not RESOLVERS.acquire(blocking=False):
+                    return self.reply(429, {'error': 'The downloader is busy.'})
+                try:
+                    completed = subprocess.run(['/opt/youtube-probe/YoutubeProbe', source], capture_output=True, text=True, timeout=75, check=True)
+                    result = json.loads(completed.stdout.strip().splitlines()[-1])
+                finally:
+                    RESOLVERS.release()
             elif self.path == '/cookies':
                 result = import_cookies(body.get('cookies'))
             elif self.path == '/forget-cookies':
