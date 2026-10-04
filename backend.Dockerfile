@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0-bookworm-slim AS youtube-probe-build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS youtube-probe-build
 WORKDIR /probe
 COPY backend/youtube-probe/ ./
 RUN dotnet publish -c Release -r linux-x64 --self-contained true -o /probe/out -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false
