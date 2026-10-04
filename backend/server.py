@@ -150,6 +150,8 @@ def error_kind(exc):
     message = str(exc).lower()
     if '429' in message or 'too many requests' in message or 'rate limit' in message:
         return 'rate_limited'
+    if 'not a bot' in message or 'confirm you' in message and 'bot' in message or 'bot verification' in message:
+        return 'bot_verification'
     if 'private' in message or 'login' in message or 'sign in' in message or 'cookies' in message or 'authentication' in message:
         return 'authentication'
     if '403' in message or 'forbidden' in message or 'blocked' in message:
@@ -163,14 +165,18 @@ def error_kind(exc):
     return 'unavailable'
 
 
-def public_error(exc):
+def public_error(exc, url=None):
     kind = error_kind(exc)
+    domain = platform_key(url) if url else ''
+    youtube = domain in ('youtube.com', 'youtu.be')
+    if kind == 'bot_verification':
+        return ('YouTube asked the deployed server to confirm it is not a bot. The share link is valid; this is a server-access restriction, not a phone issue. The site operator needs to configure YouTube access for the backend. Retrying or removing the share parameter does not resolve this challenge.' if youtube else 'The platform requires bot verification from the downloader server. The site operator needs to configure platform access for the backend.')
     if kind == 'authentication':
-        return 'This post appears to require login. A private, single-user Fetchly instance can optionally use its own TikTok cookie file, but cookies do not guarantee access. Otherwise, open the post in TikTok and use Save video if the creator allows it.'
+        return 'This post requires sign-in, age verification, or member access. Import your own authorized cookies in Download preferences & login if needed. Cookies do not guarantee access from the deployed server.'
     if kind == 'rate_limited':
         return 'The platform is rate-limiting the downloader (HTTP 429). You can retry, but the platform may continue to refuse requests.'
     if kind == 'blocked':
-        return 'The platform refused the server request (HTTP 403). A TikTok cookie file may help on a private, single-user Fetchly instance, but TikTok can still refuse the server. Open the post in TikTok and use Save video if the creator allows it.'
+        return 'The platform refused the downloader server request (HTTP 403). The link may work on your device while the deployed server is blocked. The site operator needs to review backend platform access.'
     if kind == 'timeout':
         return 'The platform did not respond in time. Wait a moment and try once more.'
     if kind == 'unsupported':
@@ -460,7 +466,7 @@ def worker(job_id, item):
         kind = error_kind(exc)
         logging.warning('media job failed: platform=%s category=%s', platform_key(item['source']), kind)
         with LOCK:
-            JOBS[job_id].update({'status': 'error', 'error': str(exc) if isinstance(exc, ValueError) else public_error(exc), 'expires': time.time() + TTL})
+            JOBS[job_id].update({'status': 'error', 'error': str(exc) if isinstance(exc, ValueError) else public_error(exc, item['source']), 'expires': time.time() + TTL})
         # Keep source .part/.ytdl files for a retry; never offer partial output as ready.
         for partial_output in folder.glob('media.*'):
             partial_output.unlink(missing_ok=True)
@@ -925,7 +931,7 @@ class Handler(BaseHTTPRequestHandler):
                             logging.info('TikTok preview fallback unavailable: category=%s', error_kind(preview_error))
                 except (ValueError, TypeError):
                     pass
-            self.reply(502, {'error': public_error(exc)})
+            self.reply(502, {'error': public_error(exc, body.get('url') if isinstance(body, dict) else None)})
 
     def do_GET(self):
         if urlsplit(self.path).path == '/healthz':
