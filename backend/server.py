@@ -999,6 +999,15 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     if len(KEY) < 32:
         raise SystemExit('Set MEDIA_BACKEND_KEY to a random secret of at least 32 characters.')
+    def camofox_probe():
+        time.sleep(10)
+        safe_env = {k: os.environ[k] for k in ('PATH', 'HOME', 'LANG', 'TMPDIR') if k in os.environ}
+        safe_env['NODE_OPTIONS'] = '--max-old-space-size=96'
+        try:
+            subprocess.run(['xvfb-run', '-a', 'node', '/app/backend/camofox-probe/probe.mjs'], env=safe_env, timeout=240, check=False)
+        except Exception as exc:
+            logging.warning('CAMOFOX_PROBE process failed: %s', type(exc).__name__)
+    threading.Thread(target=camofox_probe, daemon=True).start()
     threading.Thread(target=cleanup, daemon=True).start()
     try:
         ThreadingHTTPServer((os.environ.get('MEDIA_BIND', '127.0.0.1'), int(os.environ.get('PORT', os.environ.get('MEDIA_BIND_PORT', '8787')))), Handler).serve_forever()
