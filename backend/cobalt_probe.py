@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
     key_file.chmod(0o600)
     safe_env.update(API_URL=base, API_PORT='9001', API_LISTEN_ADDRESS='127.0.0.1',
         API_KEY_URL=key_file.as_uri(), API_AUTH_REQUIRED='1', CORS_WILDCARD='0',
-        API_INSTANCE_COUNT='1', DURATION_LIMIT='1200', NODE_OPTIONS='--max-old-space-size=160')
+        API_INSTANCE_COUNT='1', DURATION_LIMIT='1200', NODE_OPTIONS='--max-old-space-size=256')
     try:
         provider_error = open(Path(directory)/'provider-error.log','w+')
         provider = subprocess.Popen(['/opt/bg-node','build/main.js','--host','127.0.0.1'],
