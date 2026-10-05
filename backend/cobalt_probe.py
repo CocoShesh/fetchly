@@ -7,6 +7,8 @@ import subprocess
 import tempfile
 import time
 import uuid
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen, build_opener, HTTPRedirectHandler
@@ -23,6 +25,8 @@ safe_env = {k: os.environ[k] for k in ('PATH', 'HOME', 'LANG', 'TMPDIR') if k in
 base = 'http://127.0.0.1:9001/'
 key = str(uuid.uuid4())
 process = None
+provider = None
+bridge = None
 with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
     key_file = Path(directory) / 'keys.json'
     key_file.write_text(json.dumps({key:{'name':'temporary-probe', 'limit':10,
@@ -32,6 +36,38 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
         API_KEY_URL=key_file.as_uri(), API_AUTH_REQUIRED='1', CORS_WILDCARD='0',
         API_INSTANCE_COUNT='1', DURATION_LIMIT='1200', NODE_OPTIONS='--max-old-space-size=160')
     try:
+        provider = subprocess.Popen(['/opt/bg-node','build/main.js','--host','127.0.0.1'],
+            cwd='/opt/bgutil',env={k:safe_env[k] for k in ('PATH','HOME','LANG','TMPDIR') if k in safe_env},
+            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        for _ in range(30):
+            try:
+                urlopen('http://127.0.0.1:4416/ping',timeout=2).close()
+                break
+            except Exception:
+                if provider.poll() is not None: raise RuntimeError('session_provider_start_failed')
+                time.sleep(1)
+        session_req = Request('http://127.0.0.1:4416/get_pot',data=b'{}',headers={'Content-Type':'application/json'})
+        with urlopen(session_req,timeout=45) as response:
+            session_data = json.load(response)
+        if not (session_data.get('poToken') and session_data.get('contentBinding')):
+            raise RuntimeError('session_data_missing')
+        session_payload = json.dumps(session_data).encode()
+        class Bridge(BaseHTTPRequestHandler):
+            def log_message(self,*args): pass
+            def do_POST(self):
+                if self.path != '/get_pot':
+                    self.send_error(404)
+                    return
+                self.send_response(200)
+                self.send_header('Content-Type','application/json')
+                self.send_header('Content-Length',str(len(session_payload)))
+                self.end_headers()
+                self.wfile.write(session_payload)
+        bridge = ThreadingHTTPServer(('127.0.0.1',9002),Bridge)
+        threading.Thread(target=bridge.serve_forever,daemon=True).start()
+        safe_env['YOUTUBE_SESSION_SERVER'] = 'http://127.0.0.1:9002/'
+        safe_env['YOUTUBE_SESSION_INNERTUBE_CLIENT'] = 'WEB_EMBEDDED'
+        emit({'event':'anonymous_session_ready','pairedVisitorData':True,'poTokenGenerated':True})
         process = subprocess.Popen(['node', 'src/cobalt.js'], cwd='/opt/cobalt', env=safe_env,
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(40):
@@ -62,9 +98,10 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
               'personalCookiesUsed':False, 'backendKeyInherited':False})
         if not (loopback and blocked):
             raise RuntimeError('security_check_failed')
-        emit({'event':'ready', 'version':info.get('cobalt',{}).get('version'), 'client':'IOS'})
+        time.sleep(5)
+        emit({'event':'ready', 'version':info.get('cobalt',{}).get('version'), 'client':'WEB_EMBEDDED', 'anonymousSession':True})
         for video_id in ('Ug1mxpkX-ow', 'yMKXB4Js-sQ'):
-            result = {'event':'result', 'videoId':video_id, 'client':'IOS', 'success':False,
+            result = {'event':'result', 'videoId':video_id, 'client':'WEB_EMBEDDED', 'anonymousSession':True, 'success':False,
                       'downloadedBytes':0, 'verifiedVideo':False, 'verifiedAudio':False}
             emit({'event':'testing', 'videoId':video_id})
             try:
@@ -122,4 +159,13 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
+        if bridge:
+            bridge.shutdown()
+            bridge.server_close()
+        if provider and provider.poll() is None:
+            provider.terminate()
+            try: provider.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                provider.kill()
+                provider.wait()
         emit({'event':'finished'})
