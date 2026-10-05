@@ -8,7 +8,7 @@ RUN corepack enable && pnpm install --prod --frozen-lockfile && pnpm deploy --fi
 RUN cp LICENSE /prod/cobalt/COBALT-LICENSE && cp api/LICENSE /prod/cobalt/LICENSE && cp -r .git /prod/cobalt/.git
 FROM node:24-bookworm-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv ffmpeg ca-certificates tini && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv ffmpeg ca-certificates tini libatomic1 && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN python3 -m venv /opt/media && /opt/media/bin/pip install --no-cache-dir -r /app/backend/requirements.txt
 COPY --from=cobaltbuild /prod/cobalt /opt/cobalt

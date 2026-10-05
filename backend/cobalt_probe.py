@@ -36,15 +36,21 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
         API_KEY_URL=key_file.as_uri(), API_AUTH_REQUIRED='1', CORS_WILDCARD='0',
         API_INSTANCE_COUNT='1', DURATION_LIMIT='1200', NODE_OPTIONS='--max-old-space-size=160')
     try:
+        provider_error = open(Path(directory)/'provider-error.log','w+')
         provider = subprocess.Popen(['/opt/bg-node','build/main.js','--host','127.0.0.1'],
             cwd='/opt/bgutil',env={k:safe_env[k] for k in ('PATH','HOME','LANG','TMPDIR') if k in safe_env},
-            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            stdout=subprocess.DEVNULL,stderr=provider_error)
         for _ in range(30):
             try:
                 urlopen('http://127.0.0.1:4416/ping',timeout=2).close()
                 break
             except Exception:
-                if provider.poll() is not None: raise RuntimeError('session_provider_start_failed')
+                if provider.poll() is not None:
+                    provider_error.seek(0)
+                    detail = provider_error.read(4000)
+                    flags = [needle for needle in ('libatomic','GLIBC','ERR_MODULE_NOT_FOUND','ERR_DLOPEN_FAILED','ENOENT','Cannot find module') if needle in detail]
+                    emit({'event':'session_provider_start_diagnostic','indicators':flags,'exitcode':provider.returncode})
+                    raise RuntimeError('session_provider_start_failed')
                 time.sleep(1)
         session_req = Request('http://127.0.0.1:4416/get_pot',data=b'{}',headers={'Content-Type':'application/json'})
         with urlopen(session_req,timeout=45) as response:
