@@ -1,0 +1,1 @@
+Temporary Cobalt test based on imputnet/cobalt commit a636575b09de1fc55d9b8cd98cac88f5f2f16b42 (AGPL-3.0). API source is unmodified. Root pnpm overrides patch known production dependency advisories. The accompanying lockfile freezes the patched resolution. Original license notices remain in the image. This is not a full security audit.
