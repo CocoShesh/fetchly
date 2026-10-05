@@ -1000,6 +1000,20 @@ if __name__ == '__main__':
     if len(KEY) < 32:
         raise SystemExit('Set MEDIA_BACKEND_KEY to a random secret of at least 32 characters.')
     threading.Thread(target=cleanup, daemon=True).start()
+    if os.environ.get('FETCHLY_WPC_PROBE') == '1':
+        def run_wpc_probe():
+            time.sleep(12)
+            safe_env = {k: os.environ[k] for k in ('PATH', 'HOME', 'LANG', 'TMPDIR') if k in os.environ}
+            try:
+                proc = subprocess.Popen(['/opt/media/bin/python', '/app/backend/wpc_probe.py'],
+                                        env=safe_env, start_new_session=True)
+                proc.wait(timeout=390)
+            except subprocess.TimeoutExpired:
+                os.killpg(proc.pid, 15)
+                logging.error('WPC_PROBE {"event":"worker_timeout"}')
+            except Exception as exc:
+                logging.error('WPC_PROBE {"event":"worker_failed","category":"%s"}', type(exc).__name__)
+        threading.Thread(target=run_wpc_probe, daemon=True).start()
     try:
         ThreadingHTTPServer((os.environ.get('MEDIA_BIND', '127.0.0.1'), int(os.environ.get('PORT', os.environ.get('MEDIA_BIND_PORT', '8787')))), Handler).serve_forever()
     finally:
