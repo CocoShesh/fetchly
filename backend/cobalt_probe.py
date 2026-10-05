@@ -56,8 +56,7 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
         try:
             opener.open(Request(base, data=payload, headers=headers), timeout=10).close()
         except HTTPError as exc:
-            rejection = json.loads(exc.read(65536))
-            blocked = rejection.get('status') == 'error' and rejection.get('error',{}).get('code') == 'error.api.auth.key.missing'
+            blocked = exc.code in (401,403)
         emit({'event':'security_check', 'loopbackOnly':loopback, 'unauthenticatedBlocked':blocked,
               'personalCookiesUsed':False, 'backendKeyInherited':False})
         if not (loopback and blocked):
