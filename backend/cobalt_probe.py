@@ -58,10 +58,6 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
         if not (session_data.get('poToken') and session_data.get('contentBinding')):
             raise RuntimeError('session_data_missing')
         session_payload = json.dumps(session_data).encode()
-        provider.terminate()
-        provider.wait(timeout=5)
-        provider_error.close()
-        cobalt_error = open(Path(directory)/'cobalt-error.log','w+')
         class Bridge(BaseHTTPRequestHandler):
             def log_message(self,*args): pass
             def do_POST(self):
@@ -79,7 +75,7 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
         safe_env['YOUTUBE_SESSION_INNERTUBE_CLIENT'] = 'WEB_EMBEDDED'
         emit({'event':'anonymous_session_ready','pairedVisitorData':True,'poTokenGenerated':True})
         process = subprocess.Popen(['node', 'src/cobalt.js'], cwd='/opt/cobalt', env=safe_env,
-            stdout=subprocess.DEVNULL, stderr=cobalt_error)
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(40):
             try:
                 with urlopen(base, timeout=2) as response:
@@ -158,10 +154,6 @@ with tempfile.TemporaryDirectory(prefix='cobalt-probe-') as directory:
                     result['success'] = result['verifiedVideo'] and result['verifiedAudio']
             except Exception as exc:
                 result['failure'] = str(exc) if isinstance(exc,RuntimeError) else type(exc).__name__
-                result['cobaltExitCode'] = process.poll()
-                cobalt_error.seek(0)
-                detail = cobalt_error.read(16000)
-                result['processIndicators'] = [needle for needle in ('heap out of memory','ENOMEM','ERR_DLOPEN_FAILED','ERR_MODULE_NOT_FOUND','FATAL ERROR','decipher') if needle in detail]
             emit(result)
     except Exception as exc:
         emit({'event':'failed','category':str(exc) if isinstance(exc,RuntimeError) else type(exc).__name__})
