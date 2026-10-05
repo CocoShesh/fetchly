@@ -1,4 +1,3 @@
-FROM brainicism/bgutil-ytdlp-pot-provider:2.0.1-node AS sessionprovider
 FROM node:24-bookworm-slim AS cobaltbuild
 RUN apt-get update && apt-get install -y --no-install-recommends git python3 build-essential ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /src/cobalt
@@ -12,8 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN python3 -m venv /opt/media && /opt/media/bin/pip install --no-cache-dir -r /app/backend/requirements.txt
 COPY --from=cobaltbuild /prod/cobalt /opt/cobalt
-COPY --from=sessionprovider /app /opt/bgutil
-COPY --from=sessionprovider /usr/local/bin/node /opt/bg-node
 COPY backend /app/backend
 RUN mkdir -p /app/engines && chown -R node:node /app
 USER node
