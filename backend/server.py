@@ -999,18 +999,6 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     if len(KEY) < 32:
         raise SystemExit('Set MEDIA_BACKEND_KEY to a random secret of at least 32 characters.')
-    def cobalt_probe():
-        time.sleep(10)
-        safe_env = {k: os.environ[k] for k in ('PATH', 'HOME', 'LANG', 'TMPDIR') if k in os.environ}
-        proc = subprocess.Popen(['/opt/media/bin/python', '/app/backend/cobalt_probe.py'], env=safe_env, start_new_session=True)
-        try:
-            proc.wait(timeout=420)
-        except subprocess.TimeoutExpired:
-            import signal
-            os.killpg(proc.pid, signal.SIGKILL)
-            proc.wait()
-            logging.warning('COBALT_PROBE experiment_timeout')
-    threading.Thread(target=cobalt_probe, daemon=True).start()
     threading.Thread(target=cleanup, daemon=True).start()
     try:
         ThreadingHTTPServer((os.environ.get('MEDIA_BIND', '127.0.0.1'), int(os.environ.get('PORT', os.environ.get('MEDIA_BIND_PORT', '8787')))), Handler).serve_forever()
