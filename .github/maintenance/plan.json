@@ -1,0 +1,87 @@
+{
+  "start": "2026-10-10",
+  "end": "2026-11-08",
+  "timezone": "Asia/Manila",
+  "reviewed_base": "4c80aeb3003596cb819719d7ffc1f05a1b0c7d38",
+  "tasks": [
+    {
+      "id": "contributing",
+      "due": "2026-10-10",
+      "title": "Add project-specific contribution and verification guide",
+      "files": {
+        "CONTRIBUTING.md": "# Contributing to fetchly\n\n## Start with the correct application\n\nUse Node.js 24+, pnpm, Python 3.10+, FFmpeg and FFprobe. Run `pnpm install --frozen-lockfile`, create a Python virtual environment, and install `backend/requirements.txt`. Copy `.env.example` to `.env.local`. Set the same generated `MEDIA_BACKEND_KEY` in Next.js and the Python process; Python does not load dotenv automatically. Start `python3 backend/server.py` and `pnpm dev` in separate terminals. See README.md for Docker setup.\n\n## Keep changes reviewable\n\nDescribe the observed problem and the behavior after your change. Keep one concern per pull request; avoid unrelated dependency updates and formatting churn. Read existing repository instructions before changing source.\n\n## Verification\n\n`pnpm typecheck`, `pnpm build`, and `python3 -m unittest discover -s backend/tests -v`. The fixture-based smoke test is `python3 scripts/e2e-smoke.py`; it requires the production build, FFmpeg and free ports 8787/3099. Synthetic tests do not prove that a live platform accepts downloads.\n\nFor browser changes, check 390 × 844, 768 × 1024 and 1440 × 900 viewports. Look for horizontal overflow, clipped controls, readable text and keyboard focus. Record the actual browser and dimensions; a screenshot alone does not prove the whole journey.\n\nUseful end-to-end check: Resolve a permitted public video URL, inspect available formats, prepare a download, and verify the saved file is media rather than an HTML/JSON error. Check retry and metadata-only fallback behavior.\n\n## Handle sensitive data\n\nNever attach cookie jars, backend keys, visitor sessions or signed media URLs. Use owned or synthetic test media. Redact identifying query parameters in example links.\n\n## Before opening a pull request\n\n- Explain what changed and why.\n- List commands actually run and their results; state skipped checks explicitly.\n- Include reproducible steps for bug fixes and relevant screenshots for UI changes.\n- Describe migration or rollback needs when changing persisted data.\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    },
+    {
+      "id": "bug-report",
+      "due": "2026-10-15",
+      "title": "Add reproducible bug report form with privacy guidance",
+      "files": {
+        ".github/ISSUE_TEMPLATE/bug-report.yml": "name: Bug report\ndescription: Report a reproducible problem in fetchly\ntitle: \"[Bug]: \"\nbody:\n  - type: markdown\n    attributes:\n      value: \"Never attach cookie jars, backend keys, visitor sessions or signed media URLs. Use owned or synthetic test media. Redact identifying query parameters in example links.\"\n  - type: textarea\n    id: steps\n    attributes:\n      label: Steps to reproduce\n      description: Include the application entry point and smallest reproducible sequence.\n    validations:\n      required: true\n  - type: textarea\n    id: expected\n    attributes:\n      label: Expected behavior\n    validations:\n      required: true\n  - type: textarea\n    id: actual\n    attributes:\n      label: Actual behavior\n    validations:\n      required: true\n  - type: input\n    id: environment\n    attributes:\n      label: Environment\n      description: Browser/OS, viewport if relevant, runtime version, and commit or deployment.\n    validations:\n      required: true\n  - type: textarea\n    id: evidence\n    attributes:\n      label: Sanitized logs or screenshots\n      description: Remove secrets and personal data. Include a failing request status when relevant.\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    },
+    {
+      "id": "pull-request",
+      "due": "2026-10-20",
+      "title": "Add pull request verification and recovery template",
+      "files": {
+        ".github/pull_request_template.md": "## Problem and resulting behavior\n\nExplain the concrete trigger, what happened before, and what happens now.\n\n## Verification\n\nList the commands or manual steps actually run, browser/viewports if relevant, and pass/fail results. Do not check off tests that were not run.\n\nSuggested project checks: `pnpm typecheck`, `pnpm build`, and `python3 -m unittest discover -s backend/tests -v`. The fixture-based smoke test is `python3 scripts/e2e-smoke.py`; it requires the production build, FFmpeg and free ports 8787/3099. Synthetic tests do not prove that a live platform accepts downloads.\n\nRelevant user journey: Resolve a permitted public video URL, inspect available formats, prepare a download, and verify the saved file is media rather than an HTML/JSON error. Check retry and metadata-only fallback behavior.\n\n## Risks and recovery\n\nDescribe persisted-data effects, provider/API changes, and rollback steps if applicable.\n\n## Privacy\n\nNever attach cookie jars, backend keys, visitor sessions or signed media URLs. Use owned or synthetic test media. Redact identifying query parameters in example links.\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    },
+    {
+      "id": "source-preflight",
+      "due": "2026-10-25",
+      "title": "Add dependency-free source syntax checks and CI",
+      "files": {
+        "scripts/source-preflight.py": "\"\"\"Dependency-free source syntax check; does not contact providers or run the app.\"\"\"\nimport ast\nfrom html.parser import HTMLParser\nfrom pathlib import Path\nimport subprocess\nimport tempfile\n\nroot = Path(__file__).resolve().parents[1]\npaths = subprocess.check_output(['git', 'ls-files', '-z'], cwd=root).decode().split('\\0')\ncount = 0\nclass InlineScripts(HTMLParser):\n    def __init__(self):\n        super().__init__(); self.active=False; self.chunks=[]; self.scripts=[]\n    def handle_starttag(self, tag, attrs):\n        attrs=dict(attrs)\n        if tag == 'script':\n            self.active = not attrs.get('src') and attrs.get('type', '').lower() in ('', 'module', 'text/javascript', 'application/javascript')\n            self.chunks=[]\n    def handle_data(self, data):\n        if self.active: self.chunks.append(data)\n    def handle_endtag(self, tag):\n        if tag == 'script' and self.active:\n            self.scripts.append(''.join(self.chunks)); self.active=False\nfor name in paths:\n    path = root / name\n    if not path.is_file(): continue\n    if path.suffix in ('.js', '.mjs', '.cjs'):\n        subprocess.run(['node', '--check', str(path)], check=True); count += 1\n    elif path.suffix == '.py':\n        ast.parse(path.read_text(), filename=name); count += 1\n    elif path.suffix == '.html':\n        parser=InlineScripts(); parser.feed(path.read_text())\n        for script in parser.scripts:\n            with tempfile.TemporaryDirectory() as directory:\n                probe=Path(directory)/'inline.mjs'; probe.write_text(script)\n                subprocess.run(['node', '--check', str(probe)], check=True); count += 1\nif not count: raise SystemExit('No supported source files checked.')\nprint(f'PASS: {count} JavaScript/Python source and inline-script syntax checks. TypeScript, browser behavior, and provider access were not exercised.')\n",
+        ".github/workflows/source-preflight.yml": "name: Source preflight\non:\n  push:\n    paths: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.py', '**/*.html', '.github/workflows/source-preflight.yml']\n  pull_request:\n    paths: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.py', '**/*.html', '.github/workflows/source-preflight.yml']\n  workflow_dispatch:\npermissions:\n  contents: read\nconcurrency:\n  group: source-preflight-${{ github.ref }}\n  cancel-in-progress: true\njobs:\n  syntax:\n    runs-on: ubuntu-latest\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '24'\n      - run: python3 scripts/source-preflight.py\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    },
+    {
+      "id": "configuration-check",
+      "due": "2026-10-30",
+      "title": "Add configuration diagnostics without exposing secrets",
+      "files": {
+        "scripts/check-local-setup.py": "\"\"\"Check required environment names without printing credential values.\"\"\"\nimport os\nfrom pathlib import Path\nimport re\nimport sys\n\nREQUIRED = ['MEDIA_BACKEND_KEY']\nENV_FILE = '.env.local'\nvalues = {}\nif ENV_FILE:\n    path = Path(__file__).resolve().parents[1] / ENV_FILE\n    if path.is_file():\n        for raw in path.read_text().splitlines():\n            match = re.match(r\"^\\s*(?:export\\s+)?([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.*?)\\s*$\", raw)\n            if match:\n                value=match[2].split(' #', 1)[0].strip().strip('\\\"').strip(\"'\")\n                values[match[1]]=value\nvalues.update(os.environ)\nmissing=[]\nfor name in REQUIRED:\n    value=values.get(name, '').strip()\n    if not value or value.lower().startswith(('replace-', 'your-', '<')):\n        missing.append(name)\nif 'CREDENTIAL_ENCRYPTION_KEY' in REQUIRED:\n    if not re.fullmatch(r'[0-9a-fA-F]{64}', values.get('CREDENTIAL_ENCRYPTION_KEY', '')):\n        if 'CREDENTIAL_ENCRYPTION_KEY' not in missing: missing.append('CREDENTIAL_ENCRYPTION_KEY (must be 64 hex characters)')\nif missing:\n    print('Missing or placeholder configuration: ' + ', '.join(missing))\n    sys.exit(1)\nprint('PASS: Required configuration is present. Values were not printed; provider access was not tested.')\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    },
+    {
+      "id": "operations",
+      "due": "2026-11-04",
+      "title": "Document project-specific troubleshooting and recovery",
+      "files": {
+        "docs/maintenance/OPERATIONS.md": "# fetchly: troubleshooting and recovery\n\n## Scope\n\nThis guide describes the checked-in application as reviewed on 2026-10-10. Confirm current source and deployment configuration before operating on live data.\n\n## Local setup\n\nUse Node.js 24+, pnpm, Python 3.10+, FFmpeg and FFprobe. Run `pnpm install --frozen-lockfile`, create a Python virtual environment, and install `backend/requirements.txt`. Copy `.env.example` to `.env.local`. Set the same generated `MEDIA_BACKEND_KEY` in Next.js and the Python process; Python does not load dotenv automatically. Start `python3 backend/server.py` and `pnpm dev` in separate terminals. See README.md for Docker setup.\n\n## Diagnose the failing boundary\n\nThe Next.js frontend depends on the private Python media service. Check the service URL and shared key before treating a download failure as a frontend bug. FFmpeg and FFprobe must be on PATH. Platform 403/429 responses can come from upstream restrictions; a successful metadata preview is not proof of downloadable media. Pending jobs and temporary files expire; a restart invalidates pending results. Preserve logs without cookies or secrets. Test extractor updates using an affected permitted URL before changing pinned dependencies.\n\n## Safe verification\n\n`pnpm typecheck`, `pnpm build`, and `python3 -m unittest discover -s backend/tests -v`. The fixture-based smoke test is `python3 scripts/e2e-smoke.py`; it requires the production build, FFmpeg and free ports 8787/3099. Synthetic tests do not prove that a live platform accepts downloads.\n\nRun `python3 scripts/check-local-setup.py` for a local configuration check (or static HTTP check for photobooth). This does not authenticate to remote providers or launch an application workload.\n\n## Reproduce before changing data\n\nResolve a permitted public video URL, inspect available formats, prepare a download, and verify the saved file is media rather than an HTML/JSON error. Check retry and metadata-only fallback behavior.\n\nUse fixture data and an isolated deployment. Keep the last working revision available. Record the runtime, affected route/provider and error status before retrying. Do not repeatedly retry a rate-limited upstream.\n\n## Information safe to share\n\nNever attach cookie jars, backend keys, visitor sessions or signed media URLs. Use owned or synthetic test media. Redact identifying query parameters in example links.\n\n## After a recovery\n\nRecheck the failing journey and one normal journey, confirm that persisted/browser-local data is still available where expected, and document any steps that could not be exercised.\n"
+      },
+      "source_hashes": {
+        "package.json": "e292e473ef487040f444577a11c50f413d0dfc2654cf12906da9c12ff793c65f",
+        "backend/server.py": "90129ac98abb778e13efd3bc719b6d1651e8321f7f0f6c3edaf744b3c0e53180",
+        "backend/requirements.txt": "47e608038540a265bb96fad6589a9d87c01255e2015ec4ed105afda5d4da39dc"
+      }
+    }
+  ]
+}

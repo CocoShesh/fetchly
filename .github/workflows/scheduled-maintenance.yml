@@ -1,0 +1,39 @@
+name: Scheduled reviewed maintenance
+on:
+  schedule:
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Apply one due reviewed change (false performs a dry run)
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: reviewed-maintenance
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify publisher safety
+        run: python3 -B .github/maintenance/test_run.py
+      - name: Apply the due reviewed change
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          APPLY: ${{ github.event_name == 'schedule' || inputs.apply }}
+        run: |
+          if [ "$APPLY" = "true" ]; then
+            python3 .github/maintenance/run.py --apply
+          else
+            python3 .github/maintenance/run.py
+          fi
