@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a reproducible problem in fetchly
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Never attach cookie jars, backend keys, visitor sessions or signed media URLs. Use owned or synthetic test media. Redact identifying query parameters in example links."
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the application entry point and smallest reproducible sequence.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser/OS, viewport if relevant, runtime version, and commit or deployment.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or screenshots
+      description: Remove secrets and personal data. Include a failing request status when relevant.
