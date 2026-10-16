@@ -4,7 +4,7 @@ Fetchly now includes exact source-format controls, muted/video-only output, brow
 
 # Latest feature update
 
-See [FEATURES.md](FEATURES.md) for playlists, Instagram photo archives, audio formats, per-visitor login sessions, and preferences. See [TELEGRAM_BOT_SETUP.md](TELEGRAM_BOT_SETUP.md) to connect a private Telegram bot to Fetchly. Rebuild with `sudo docker compose up --build -d`. The owner-wide cookie configuration now requires `FETCHLY_PRIVATE_MODE=1` for private instances; normal shared use uses the per-visitor importer. TikTok includes a public-page fallback that verifies a video source before offering downloads.
+See [FEATURES.md](FEATURES.md) for playlists, Instagram photo archives, audio formats, per-visitor login sessions, and preferences. Rebuild with `sudo docker compose up --build -d`. The owner-wide cookie configuration now requires `FETCHLY_PRIVATE_MODE=1` for private instances; normal shared use uses the per-visitor importer. TikTok includes a public-page fallback that verifies a video source before offering downloads.
 
 # Fetchly social media video downloader
 

@@ -34,7 +34,6 @@ export function HeroDownloader() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ResolvedMedia | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const autoCheckRef = useRef(false)
   const detected = useMemo(() => detectPlatform(url), [url])
   const activeStep = status === 'loading' ? 1 : status === 'success' ? 2 : 0
 
@@ -44,7 +43,9 @@ export function HeroDownloader() {
     return () => window.removeEventListener('fetchly-engines-restarted', restarted)
   }, [])
 
-  async function checkLink(candidate: string) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const candidate = url.trim()
     if (!candidate || status === 'loading') return
 
     setStatus('loading')
@@ -71,21 +72,6 @@ export function HeroDownloader() {
         : 'Could not reach Fetchly. Check your connection and try again.')
       setStatus('error')
     }
-  }
-
-  useEffect(() => {
-    const incoming = new URLSearchParams(window.location.search).get('url')?.trim()
-    if (!incoming || autoCheckRef.current || !detectPlatform(incoming)) return
-    autoCheckRef.current = true
-    setUrl(incoming)
-    void checkLink(incoming)
-    // The shared link is intentionally processed once on page load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    void checkLink(url.trim())
   }
 
   async function loadMore() {
