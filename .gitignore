@@ -28,3 +28,6 @@ cookies*.txt
 engines/
 backend/live-test-results.json
 backend/instagram-download-test.json
+
+# Local launch video working files
+/brag-output*/

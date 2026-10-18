@@ -1,12 +1,24 @@
-# Interface tools update
+# Fetchly
+
+Save the best version available. A self-hosted social media downloader for video, audio, playlists, and photo galleries from supported posts.
+
+## Launch video
+
+[![Watch the Fetchly launch video: Paste. Choose. Save.](docs/media/fetchly-launch.jpg)](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4)
+
+[Watch the launch video](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4) · [Download MP4](https://raw.githubusercontent.com/CocoShesh/fetchly/main/docs/media/fetchly-launch.mp4)
+
+20 seconds · English · 1080p · 30fps · Music and sound effects. The animated product demo uses sample media; available formats depend on the source post and platform.
+
+## Interface tools update
 
 Fetchly now includes exact source-format controls, muted/video-only output, browser-local download history with retry, selective batch retries, broader gallery-dl support, byte-range file transfers, and admin-only staged engine updates. See [FEATURES.md](FEATURES.md) for operation, configuration, and coverage.
 
-# Latest feature update
+## Latest feature update
 
 See [FEATURES.md](FEATURES.md) for playlists, Instagram photo archives, audio formats, per-visitor login sessions, and preferences. Rebuild with `sudo docker compose up --build -d`. The owner-wide cookie configuration now requires `FETCHLY_PRIVATE_MODE=1` for private instances; normal shared use uses the per-visitor importer. TikTok includes a public-page fallback that verifies a video source before offering downloads.
 
-# Fetchly social media video downloader
+## Overview
 
 This update keeps the existing Next.js interface and replaces `btch-downloader` with a private Python **yt-dlp + FFmpeg** extraction service. It adds TikTok oEmbed preview fallback, source-resolution choices, and a redesigned media/download panel. Instagram single-video posts and Reels also use Instaloader as a fallback when yt-dlp fails. Supported URL families: YouTube (including Shorts), TikTok, Instagram video/Reels, Facebook video, and X/Twitter video. Availability depends on the post, extractor version, login, region, and platform restrictions. Instagram photos are supported in the separate Instagram photos mode; livestream capture is not implemented. This is a tested video/audio implementation, not a guarantee that every social link works.
 
