@@ -4,7 +4,9 @@ Save the best version available. A self-hosted social media downloader for video
 
 ## Launch video
 
-[![Watch the Fetchly launch video: Paste. Choose. Save.](docs/media/fetchly-launch.jpg)](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4)
+[![Watch the Fetchly launch video: Paste. Choose. Save.](docs/media/fetchly-launch.gif)](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4)
+
+Silent looping preview. Click it to watch the full video with audio.
 
 [Watch the launch video](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4) · [Download MP4](https://raw.githubusercontent.com/CocoShesh/fetchly/main/docs/media/fetchly-launch.mp4)
 
