@@ -2,15 +2,11 @@
 
 Save the best version available. A self-hosted social media downloader for video, audio, playlists, and photo galleries from supported posts.
 
-## Launch video
+## Product demo
 
-[![Watch the Fetchly launch video: Paste. Choose. Save.](docs/media/fetchly-launch.gif)](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4)
+![Fetchly demo: Paste. Choose. Save.](docs/media/fetchly-launch.gif)
 
-Silent looping preview. Click it to watch the full video with audio.
-
-[Watch the launch video](https://github.com/CocoShesh/fetchly/blob/main/docs/media/fetchly-launch.mp4) · [Download MP4](https://raw.githubusercontent.com/CocoShesh/fetchly/main/docs/media/fetchly-launch.mp4)
-
-20 seconds · English · 1080p · 30fps · Music and sound effects. The animated product demo uses sample media; available formats depend on the source post and platform.
+20-second silent looping demo in English. The animation uses sample media; available formats depend on the source post and platform.
 
 ## Interface tools update
 
