@@ -6,5 +6,9 @@
   "bug-report": {
     "date": "2026-10-15",
     "title": "Add reproducible bug report form with privacy guidance"
+  },
+  "pull-request": {
+    "date": "2026-10-20",
+    "title": "Add pull request verification and recovery template"
   }
 }
